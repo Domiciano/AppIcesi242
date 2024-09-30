@@ -30,7 +30,6 @@ class SignupViewModel(
                 withContext(Dispatchers.Main){ authState.value = 3 }
             }catch (ex:FirebaseAuthException){
                 withContext(Dispatchers.Main){ authState.value = 2 }
-                ex.message
                 ex.printStackTrace()
             }
         }
