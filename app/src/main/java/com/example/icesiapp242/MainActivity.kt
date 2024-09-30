@@ -1,7 +1,6 @@
 package com.example.icesiapp242
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,9 +25,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.icesiapp242.domain.model.User
 import com.example.icesiapp242.ui.theme.IcesiAPP242Theme
+import com.example.icesiapp242.util.CredentialManagerHelper
 import com.example.icesiapp242.viewmodel.SignupViewModel
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,15 +43,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SignupScreen(signupViewModel: SignupViewModel = viewModel()) {
 
-
     val authState by signupViewModel.authState.observeAsState()
+    var context =  LocalContext.current
+
 
     var name by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    var context =  LocalContext.current
+
     Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             TextField(value = name, onValueChange = { name = it })
@@ -72,6 +71,14 @@ fun SignupScreen(signupViewModel: SignupViewModel = viewModel()) {
                 )
             }) {
                 Text(text = "Registrarse")
+            }
+
+            Button(onClick = {
+                signupViewModel.signupWithGoogle(
+                    CredentialManagerHelper(context)
+                )
+            }) {
+                Text(text = "Iniciar sesión con Google")
             }
         }
     }

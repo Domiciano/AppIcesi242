@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.icesiapp242.domain.model.User
 import com.example.icesiapp242.repository.AuthRepository
 import com.example.icesiapp242.repository.AuthRepositoryImpl
+import com.example.icesiapp242.util.CredentialManagerHelper
 import com.google.firebase.auth.FirebaseAuthException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,7 +14,7 @@ import kotlinx.coroutines.withContext
 
 //Hilt
 class SignupViewModel(
-    val repo : AuthRepository = AuthRepositoryImpl()
+    val repo : AuthRepository = AuthRepositoryImpl(),
 ):ViewModel() {
 
     val authState = MutableLiveData(0)
@@ -33,6 +34,12 @@ class SignupViewModel(
                 ex.message
                 ex.printStackTrace()
             }
+        }
+    }
+
+    fun signupWithGoogle(credentialManagerHelper: CredentialManagerHelper) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.signupWithGoogle(credentialManagerHelper)
         }
     }
 

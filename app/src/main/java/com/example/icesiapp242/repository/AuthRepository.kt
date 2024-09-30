@@ -1,14 +1,18 @@
 package com.example.icesiapp242.repository
 
+import android.content.Context
+import androidx.credentials.CredentialManager
 import com.example.icesiapp242.domain.model.User
 import com.example.icesiapp242.service.AuthService
 import com.example.icesiapp242.service.AuthServiceImpl
+import com.example.icesiapp242.util.CredentialManagerHelper
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 interface AuthRepository {
     suspend fun signup(user:User, password:String)
+    suspend fun signupWithGoogle(credentialManagerHelper: CredentialManagerHelper)
 }
 
 class AuthRepositoryImpl(
@@ -26,4 +30,14 @@ class AuthRepositoryImpl(
             userRepository.createUser(user)
         }
     }
+
+    override suspend fun signupWithGoogle(credentialManagerHelper: CredentialManagerHelper) {
+        try {
+            val token = authService.getGoogleToken(credentialManagerHelper)
+            authService.registerGoogleUserInFirebase(token)
+        }catch (ex:Exception){
+            ex.printStackTrace()
+        }
+    }
 }
+
