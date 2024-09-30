@@ -13,8 +13,8 @@ import kotlinx.coroutines.withContext
 
 //Hilt
 class SignupViewModel(
-    val repo : AuthRepository = AuthRepositoryImpl()
-):ViewModel() {
+    val repo: AuthRepository = AuthRepositoryImpl()
+) : ViewModel() {
 
     val authState = MutableLiveData(0)
     //0. Idle
@@ -22,14 +22,27 @@ class SignupViewModel(
     //2. Error
     //3. Success
 
-    fun signup(user: User, password:String){
+    fun signup(user: User, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main){ authState.value = 1 }
+            withContext(Dispatchers.Main) { authState.value = 1 }
             try {
                 repo.signup(user, password)
-                withContext(Dispatchers.Main){ authState.value = 3 }
+                withContext(Dispatchers.Main) { authState.value = 3 }
+            } catch (ex: FirebaseAuthException) {
+                withContext(Dispatchers.Main) { authState.value = 2 }
+                ex.printStackTrace()
+            }
+        }
+    }
+
+    fun signin(email: String, password: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                withContext(Dispatchers.Main) { authState.value = 1 }
+                repo.signin(email, password)
+                withContext(Dispatchers.Main) { authState.value = 3 }
             }catch (ex:FirebaseAuthException){
-                withContext(Dispatchers.Main){ authState.value = 2 }
+                withContext(Dispatchers.Main) { authState.value = 2 }
                 ex.printStackTrace()
             }
         }

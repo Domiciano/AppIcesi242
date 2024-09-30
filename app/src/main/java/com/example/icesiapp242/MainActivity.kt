@@ -7,8 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -62,7 +64,9 @@ fun App() {
 }
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = viewModel()) {
+    val authState by authViewModel.authState.observeAsState()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -73,7 +77,17 @@ fun LoginScreen(navController: NavController) {
             onValueChange = { password = it },
             visualTransformation = PasswordVisualTransformation()
         )
-        Button(onClick = { /*TODO*/ }) {
+        if(authState == 1){
+            CircularProgressIndicator()
+        }else if(authState == 2){
+            Text(text = "Hubo un error, que no podemos ver todavia")
+        }else if (authState == 3){
+            navController.navigate("profile")
+        }
+        
+        Button(onClick = {
+            authViewModel.signin(email, password)
+        }) {
             Text(text = "Iniciar sesion")
         }
     }
@@ -91,10 +105,16 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
         profileViewModel.getCurrentUser()
     }
     if(userState == null){
-        navController.navigate("signup")
+        navController.navigate("login")
     }else {
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
             Text(text = "Bienvenido ${userState?.name}")
+            Button(onClick = {
+                Firebase.auth.signOut() //Corregir con lo que saben
+                navController.navigate("login")
+            }) {
+                Text(text = "Cerrar sesión")
+            }
         }
     }
 }

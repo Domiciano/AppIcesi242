@@ -9,6 +9,7 @@ import com.google.firebase.ktx.Firebase
 
 interface AuthRepository {
     suspend fun signup(user:User, password:String)
+    suspend fun signin(email:String, password:String)
 }
 
 class AuthRepositoryImpl(
@@ -25,5 +26,9 @@ class AuthRepositoryImpl(
             user.id = it
             userRepository.createUser(user)
         }
+    }
+
+    override suspend fun signin(email: String, password: String) {
+        authService.loginWithEmailAndPassword(email, password)
     }
 }
