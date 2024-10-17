@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -96,6 +98,8 @@ fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = v
 @Composable
 fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
 
+
+
     val userState by profileViewModel.user.observeAsState()
     Log.e(">>>", userState.toString())
     val username by remember { mutableStateOf("") }
@@ -108,6 +112,14 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
         navController.navigate("login")
     }else {
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+
+            OutlinedTextField(
+                value = "",
+                onValueChange = { },
+                label = { Text(text = "Enter your name") },  // Aquí usas la propiedad label
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Text(text = "Bienvenido ${userState?.name}")
 
             Button(onClick = { profileViewModel.funcion1() }) {
