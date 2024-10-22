@@ -18,8 +18,7 @@ import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class ProfileViewModel(
-    val userRepository: UserRepository = UserRepositoryImpl(),
-    val chatService: ChatService = ChatServiceImpl()
+    val userRepository: UserRepository = UserRepositoryImpl()
 ) : ViewModel() {
 
 
@@ -32,27 +31,6 @@ class ProfileViewModel(
             withContext(Dispatchers.Main) {
                 _user.value = me
             }
-        }
-    }
-
-    fun funcion1() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val chatRoomID = chatService.searchChatId(
-                "MJYupfQB3Wa61qoko3jWUJpiEKu1",
-                "jje1CoWxMbU99kQ1PUNzl9KGlH02"
-            )
-        }
-    }
-
-    fun funcion2() {
-        viewModelScope.launch(Dispatchers.IO) {
-            chatService.sendMessage(Message(UUID.randomUUID().toString(), "Prueba de la función 2"), "Tf1Vm5hS6ajLMDfbBHxR")
-        }
-    }
-
-    fun funcion3() {
-        viewModelScope.launch(Dispatchers.IO) {
-            chatService.getMessages("Tf1Vm5hS6ajLMDfbBHxR")
         }
     }
 

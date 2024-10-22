@@ -127,16 +127,6 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
 
             Text(text = "Bienvenido ${userState?.name}")
 
-            Button(onClick = { profileViewModel.funcion1() }) {
-                Text(text = "Funcion 1")
-            }
-            Button(onClick = { profileViewModel.funcion2() }) {
-                Text(text = "Funcion 2")
-            }
-            Button(onClick = { profileViewModel.funcion3() }) {
-                Text(text = "Funcion 3")
-            }
-
             Button(onClick = {
                 Firebase.auth.signOut() //Corregir con lo que saben
                 navController.navigate("login")
