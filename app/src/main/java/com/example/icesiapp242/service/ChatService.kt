@@ -1,28 +1,52 @@
 package com.example.icesiapp242.service
 
+import android.util.Log
 import com.example.icesiapp242.domain.model.Message
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QueryDocumentSnapshot
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
 interface ChatService {
-    suspend fun searchChatId(userID1:String, userID2: String):String
-    suspend fun sendMessage(message: Message, chatroomID:String)
-    suspend fun getMessages(chatroomID: String):List<Message?>
-    suspend fun getLiveMessages(chatroomID: String)
+    suspend fun searchChatId(userID1: String, userID2: String): String
+    suspend fun sendMessage(message: Message, chatroomID: String)
+    suspend fun getMessages(chatroomID: String): List<Message?>
+    fun getLiveMessages(chatroomID: String, callback : (QueryDocumentSnapshot) -> Unit)
 }
 
-class ChatServiceImpl:ChatService{
+class ChatServiceImpl : ChatService {
     override suspend fun searchChatId(userID1: String, userID2: String): String {
         val result = Firebase.firestore.collection("users")
             .document(userID2)
             .collection("chats")
-            .whereEqualTo("userid",userID1)
+            .whereEqualTo("userid", userID1)
             .get()
             .await()
-        if(result.documents.size == 0){
-            return ""
-        }else{
+        if (result.documents.size == 0) {
+            val chatID = UUID.randomUUID().toString()
+            val relationshipA = hashMapOf(
+                "id" to UUID.randomUUID().toString(),
+                "userid" to userID1,
+                "chatid" to chatID
+            )
+            val relationshipB = hashMapOf(
+                "id" to UUID.randomUUID().toString(),
+                "userid" to userID2,
+                "chatid" to chatID
+            )
+            //WriteBatch
+            Firebase.firestore.collection("users")
+                .document(userID1).collection("chats")
+                .document(relationshipB["id"] ?: "").set(relationshipB).await()
+            Firebase.firestore.collection("users")
+                .document(userID2).collection("chats")
+                .document(relationshipA["id"] ?: "").set(relationshipA).await()
+            return chatID
+        } else {
             val chatid = result.documents[0].get("chatid").toString()
             return chatid
         }
@@ -42,6 +66,7 @@ class ChatServiceImpl:ChatService{
             .collection("chats")
             .document(chatroomID)
             .collection("messages")
+            .orderBy("date", Query.Direction.ASCENDING)
             .get()
             .await()
         val messages = result.documents.map { doc ->
@@ -50,8 +75,19 @@ class ChatServiceImpl:ChatService{
         return messages
     }
 
-    override suspend fun getLiveMessages(chatroomID: String) {
-        TODO("Not yet implemented")
+    override fun getLiveMessages(chatroomID: String, callback : (QueryDocumentSnapshot) -> Unit) {
+        Firebase.firestore
+            .collection("chats")
+            .document(chatroomID)
+            .collection("messages")
+            .orderBy("date", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, err ->
+                snapshot?.documentChanges?.forEach { documentChange ->
+                    if (documentChange.type == DocumentChange.Type.ADDED) {
+                        callback(documentChange.document)
+                    }
+                }
+            }
     }
 
 }

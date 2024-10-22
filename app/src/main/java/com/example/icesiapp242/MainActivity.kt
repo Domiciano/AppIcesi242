@@ -9,10 +9,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -38,6 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.icesiapp242.domain.model.User
 import com.example.icesiapp242.ui.theme.IcesiAPP242Theme
+import com.example.icesiapp242.viewmodel.ChatViewModel
 import com.example.icesiapp242.viewmodel.ProfileViewModel
 import com.example.icesiapp242.viewmodel.SignupViewModel
 import com.google.firebase.auth.ktx.auth
@@ -58,10 +63,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun App() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "profile") {
+    NavHost(navController = navController, startDestination = "chat") {
         composable("profile") { ProfileScreen(navController) }
         composable("signup") { SignupScreen(navController) }
         composable("login") { LoginScreen(navController) }
+        composable("chat") { ChatScreen(navController) }
     }
 }
 
@@ -79,14 +85,14 @@ fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = v
             onValueChange = { password = it },
             visualTransformation = PasswordVisualTransformation()
         )
-        if(authState == 1){
+        if (authState == 1) {
             CircularProgressIndicator()
-        }else if(authState == 2){
+        } else if (authState == 2) {
             Text(text = "Hubo un error, que no podemos ver todavia")
-        }else if (authState == 3){
+        } else if (authState == 3) {
             navController.navigate("profile")
         }
-        
+
         Button(onClick = {
             authViewModel.signin(email, password)
         }) {
@@ -99,7 +105,6 @@ fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = v
 fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
 
 
-
     val userState by profileViewModel.user.observeAsState()
     Log.e(">>>", userState.toString())
     val username by remember { mutableStateOf("") }
@@ -108,9 +113,9 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
     LaunchedEffect(true) {
         profileViewModel.getCurrentUser()
     }
-    if(userState == null){
+    if (userState == null) {
         navController.navigate("login")
-    }else {
+    } else {
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
 
             OutlinedTextField(
@@ -164,7 +169,7 @@ fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel 
                 CircularProgressIndicator()
             } else if (authState == 2) {
                 Text("Hubo un error", color = Color.Red)
-            }else if(authState == 3){
+            } else if (authState == 3) {
                 navController.navigate("profile")
             }
             Button(onClick = {
@@ -179,6 +184,47 @@ fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel 
     }
 }
 
+@Composable
+fun ChatScreen(navController: NavController, chatViewModel: ChatViewModel = viewModel()) {
+    var otherUserID by remember { mutableStateOf("9hHd0aWTwBN5PA3QB71gRDudxdw2") }
+    var messageText by remember { mutableStateOf("") }
+    val messagesState by chatViewModel.messagesState.observeAsState()
+
+    Log.e(">>>STATE", messagesState?.size.toString())
+
+
+    LaunchedEffect(true) {
+        chatViewModel.getMessagesLiveMode(otherUserID)
+    }
+
+
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                messagesState?.let {
+                    items(it) { message ->
+                        Text(text = message?.content ?: "")
+                    }
+                }
+            }
+            Row {
+                TextField(
+                    value = messageText,
+                    onValueChange = { messageText = it },
+                    modifier = Modifier.weight(1f)
+                )
+                Button(onClick = { chatViewModel.sendMessage(messageText, otherUserID) }) {
+                    Text(text = "Enviar")
+                }
+            }
+
+        }
+    }
+}
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
