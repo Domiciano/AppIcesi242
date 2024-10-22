@@ -7,13 +7,15 @@ import com.example.icesiapp242.domain.model.User
 import com.example.icesiapp242.repository.AuthRepository
 import com.example.icesiapp242.repository.AuthRepositoryImpl
 import com.google.firebase.auth.FirebaseAuthException
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-//Hilt
-class SignupViewModel(
-    val repo: AuthRepository = AuthRepositoryImpl()
+@HiltViewModel
+class SignupViewModel @Inject constructor(
+    val repo: AuthRepository
 ) : ViewModel() {
 
     val authState = MutableLiveData(0)

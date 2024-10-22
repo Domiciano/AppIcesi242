@@ -12,16 +12,17 @@ import com.example.icesiapp242.repository.UserRepository
 import com.example.icesiapp242.repository.UserRepositoryImpl
 import com.example.icesiapp242.service.ChatService
 import com.example.icesiapp242.service.ChatServiceImpl
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
+import javax.inject.Inject
 
-class ProfileViewModel(
-    val userRepository: UserRepository = UserRepositoryImpl(),
-    val chatService: ChatService = ChatServiceImpl()
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    val userRepository: UserRepository
 ) : ViewModel() {
-
 
     private val _user = MutableLiveData<User?>(User())
     val user: LiveData<User?> get() = _user
@@ -35,25 +36,6 @@ class ProfileViewModel(
         }
     }
 
-    fun funcion1() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val chatRoomID = chatService.searchChatId(
-                "MJYupfQB3Wa61qoko3jWUJpiEKu1",
-                "jje1CoWxMbU99kQ1PUNzl9KGlH02"
-            )
-        }
-    }
 
-    fun funcion2() {
-        viewModelScope.launch(Dispatchers.IO) {
-            chatService.sendMessage(Message(UUID.randomUUID().toString(), "Prueba de la función 2"), "Tf1Vm5hS6ajLMDfbBHxR")
-        }
-    }
-
-    fun funcion3() {
-        viewModelScope.launch(Dispatchers.IO) {
-            chatService.getMessages("Tf1Vm5hS6ajLMDfbBHxR")
-        }
-    }
 
 }

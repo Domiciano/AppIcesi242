@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -47,7 +48,10 @@ import com.example.icesiapp242.viewmodel.ProfileViewModel
 import com.example.icesiapp242.viewmodel.SignupViewModel
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import dagger.hilt.android.AndroidEntryPoint
 
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +76,7 @@ fun App() {
 }
 
 @Composable
-fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = viewModel()) {
+fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = hiltViewModel()) {
     val authState by authViewModel.authState.observeAsState()
 
     var email by remember { mutableStateOf("") }
@@ -102,7 +106,7 @@ fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = v
 }
 
 @Composable
-fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
+fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = hiltViewModel()) {
 
 
     val userState by profileViewModel.user.observeAsState()
@@ -127,16 +131,6 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
 
             Text(text = "Bienvenido ${userState?.name}")
 
-            Button(onClick = { profileViewModel.funcion1() }) {
-                Text(text = "Funcion 1")
-            }
-            Button(onClick = { profileViewModel.funcion2() }) {
-                Text(text = "Funcion 2")
-            }
-            Button(onClick = { profileViewModel.funcion3() }) {
-                Text(text = "Funcion 3")
-            }
-
             Button(onClick = {
                 Firebase.auth.signOut() //Corregir con lo que saben
                 navController.navigate("login")
@@ -148,7 +142,7 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
 }
 
 @Composable
-fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel = viewModel()) {
+fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel = hiltViewModel()) {
 
 
     val authState by signupViewModel.authState.observeAsState()
@@ -185,7 +179,7 @@ fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel 
 }
 
 @Composable
-fun ChatScreen(navController: NavController, chatViewModel: ChatViewModel = viewModel()) {
+fun ChatScreen(navController: NavController, chatViewModel: ChatViewModel = hiltViewModel()) {
     var otherUserID by remember { mutableStateOf("9hHd0aWTwBN5PA3QB71gRDudxdw2") }
     var messageText by remember { mutableStateOf("") }
     val messagesState by chatViewModel.messagesState.observeAsState()

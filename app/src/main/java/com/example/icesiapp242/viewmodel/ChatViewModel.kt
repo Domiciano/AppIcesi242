@@ -8,13 +8,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.icesiapp242.domain.model.Message
 import com.example.icesiapp242.repository.ChatRepository
 import com.example.icesiapp242.repository.ChatRepositoryImpl
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
+import javax.inject.Inject
 
-class ChatViewModel(
-    val chatRepository: ChatRepository = ChatRepositoryImpl()
+@HiltViewModel
+class ChatViewModel @Inject constructor(
+    val chatRepository: ChatRepository
 ) : ViewModel() {
 
     private val _messagesState = MutableLiveData<List<Message?>>()
