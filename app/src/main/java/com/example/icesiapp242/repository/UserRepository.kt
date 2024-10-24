@@ -5,14 +5,15 @@ import com.example.icesiapp242.service.UserServices
 import com.example.icesiapp242.service.UserServicesImpl
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import javax.inject.Inject
 
 interface UserRepository {
     suspend fun createUser(user: User)
     suspend fun getCurrentUser():User?
 }
 
-class UserRepositoryImpl(
-    val userServices: UserServices = UserServicesImpl()
+class UserRepositoryImpl @Inject constructor(
+    val userServices: UserServices
 ):UserRepository{
     override suspend fun createUser(user: User) {
         userServices.createUser(user)

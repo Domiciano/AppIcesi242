@@ -4,6 +4,7 @@ import com.example.icesiapp242.repository.AuthRepository
 import com.example.icesiapp242.repository.AuthRepositoryImpl
 import com.example.icesiapp242.repository.ChatRepository
 import com.example.icesiapp242.repository.ChatRepositoryImpl
+import com.example.icesiapp242.repository.UserRepository
 import com.example.icesiapp242.service.AuthService
 import com.example.icesiapp242.service.AuthServiceImpl
 import com.example.icesiapp242.service.ChatService
@@ -23,7 +24,7 @@ object AuthModule {
     }
 
     @Provides
-    fun provideAuthRepository(authService: AuthService): AuthRepository {
-        return AuthRepositoryImpl(authService)
+    fun provideAuthRepository(authService: AuthService, userRepository: UserRepository): AuthRepository {
+        return AuthRepositoryImpl(authService, userRepository)
     }
 }

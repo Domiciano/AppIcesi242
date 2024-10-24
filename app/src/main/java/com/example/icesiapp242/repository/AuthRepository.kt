@@ -6,15 +6,16 @@ import com.example.icesiapp242.service.AuthServiceImpl
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import javax.inject.Inject
 
 interface AuthRepository {
     suspend fun signup(user:User, password:String)
     suspend fun signin(email:String, password:String)
 }
 
-class AuthRepositoryImpl(
-    val authService: AuthService = AuthServiceImpl(),
-    val userRepository: UserRepository = UserRepositoryImpl()
+class AuthRepositoryImpl @Inject constructor(
+    val authService: AuthService,
+    val userRepository: UserRepository
 ) : AuthRepository{
     override suspend fun signup(user: User, password: String) {
         //1. Registro en modulo de autenticación

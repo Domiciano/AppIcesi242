@@ -7,6 +7,7 @@ import com.example.icesiapp242.service.ChatServiceImpl
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
+import javax.inject.Inject
 
 interface ChatRepository {
     suspend fun sendMessage(message: Message, otherUserId:String)
@@ -14,8 +15,8 @@ interface ChatRepository {
     suspend fun getLiveMessages(otherUserId: String, callback: (Message) -> Unit)
     suspend fun getChatID(otherUserID: String):String
 }
-class ChatRepositoryImpl(
-    val chatService: ChatService = ChatServiceImpl()
+class ChatRepositoryImpl @Inject constructor(
+    val chatService: ChatService
 ) : ChatRepository{
     override suspend fun sendMessage(message: Message, otherUserId: String) {
         val chatID = chatService.searchChatId(otherUserId, Firebase.auth.currentUser?.uid ?: "" )
