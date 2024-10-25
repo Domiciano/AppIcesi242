@@ -75,7 +75,7 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                                     .fillMaxWidth()
                                     .padding(8.dp),
                                 onClick = {
-                                    navController.navigate("chat")
+                                    user?.let { navController.navigate("chat/${it.id}") }
                                 }
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
