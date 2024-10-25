@@ -41,6 +41,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.icesiapp242.domain.model.User
+import com.example.icesiapp242.screens.ChatScreen
+import com.example.icesiapp242.screens.LoginScreen
+import com.example.icesiapp242.screens.ProfileScreen
+import com.example.icesiapp242.screens.SignupScreen
 import com.example.icesiapp242.ui.theme.IcesiAPP242Theme
 import com.example.icesiapp242.viewmodel.ChatViewModel
 import com.example.icesiapp242.viewmodel.ProfileViewModel
@@ -71,163 +75,11 @@ fun App() {
     }
 }
 
-@Composable
-fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = viewModel()) {
-    val authState by authViewModel.authState.observeAsState()
-
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
-        TextField(value = email, onValueChange = { email = it })
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            visualTransformation = PasswordVisualTransformation()
-        )
-        if (authState == 1) {
-            CircularProgressIndicator()
-        } else if (authState == 2) {
-            Text(text = "Hubo un error, que no podemos ver todavia")
-        } else if (authState == 3) {
-            navController.navigate("profile")
-        }
-
-        Button(onClick = {
-            authViewModel.signin(email, password)
-        }) {
-            Text(text = "Iniciar sesion")
-        }
-    }
-}
-
-@Composable
-fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
-
-
-    val userState by profileViewModel.user.observeAsState()
-    Log.e(">>>", userState.toString())
-    val username by remember { mutableStateOf("") }
-
-
-    LaunchedEffect(true) {
-        profileViewModel.getCurrentUser()
-    }
-    if (userState == null) {
-        navController.navigate("login")
-    } else {
-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
-
-            OutlinedTextField(
-                value = "",
-                onValueChange = { },
-                label = { Text(text = "Enter your name") },  // Aquí usas la propiedad label
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Text(text = "Bienvenido ${userState?.name}")
-
-            Button(onClick = {
-                Firebase.auth.signOut() //Corregir con lo que saben
-                navController.navigate("login")
-            }) {
-                Text(text = "Cerrar sesión")
-            }
-        }
-    }
-}
-
-@Composable
-fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel = viewModel()) {
-
-
-    val authState by signupViewModel.authState.observeAsState()
-
-    var name by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    var context = LocalContext.current
-    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
-            TextField(value = name, onValueChange = { name = it })
-            TextField(value = username, onValueChange = { username = it })
-            TextField(value = email, onValueChange = { email = it })
-            TextField(value = password, onValueChange = { password = it })
-            if (authState == 1) {
-                CircularProgressIndicator()
-            } else if (authState == 2) {
-                Text("Hubo un error", color = Color.Red)
-            } else if (authState == 3) {
-                navController.navigate("profile")
-            }
-            Button(onClick = {
-                signupViewModel.signup(
-                    User("", name, username, email),
-                    password
-                )
-            }) {
-                Text(text = "Registrarse")
-            }
-        }
-    }
-}
-
-@Composable
-fun ChatScreen(navController: NavController, chatViewModel: ChatViewModel = viewModel()) {
-    var otherUserID by remember { mutableStateOf("9hHd0aWTwBN5PA3QB71gRDudxdw2") }
-    var messageText by remember { mutableStateOf("") }
-    val messagesState by chatViewModel.messagesState.observeAsState()
-
-    Log.e(">>>STATE", messagesState?.size.toString())
-
-
-    LaunchedEffect(true) {
-        chatViewModel.getMessagesLiveMode(otherUserID)
-    }
-
-
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                messagesState?.let {
-                    items(it) { message ->
-                        Text(text = message?.content ?: "")
-                    }
-                }
-            }
-            Row {
-                TextField(
-                    value = messageText,
-                    onValueChange = { messageText = it },
-                    modifier = Modifier.weight(1f)
-                )
-                Button(onClick = { chatViewModel.sendMessage(messageText, otherUserID) }) {
-                    Text(text = "Enviar")
-                }
-            }
-
-        }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     IcesiAPP242Theme {
-        Greeting("Android")
+        App()
     }
 }
