@@ -6,12 +6,10 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 
 
-//
-
-
 interface UserServices {
     suspend fun createUser(user: User)
     suspend fun getUserById(id:String):User?
+    suspend fun getAllUsers():List<User?>
 }
 
 class UserServicesImpl:UserServices{
@@ -31,6 +29,16 @@ class UserServicesImpl:UserServices{
             .await()
         val userObject = user.toObject(User::class.java)
         return userObject
+    }
+
+    override suspend fun getAllUsers(): List<User?> {
+        val userList = Firebase.firestore
+            .collection("users")
+            .get()
+            .await()
+        return userList.documents.map { document ->
+            document.toObject(User::class.java)
+        }
     }
 
 }

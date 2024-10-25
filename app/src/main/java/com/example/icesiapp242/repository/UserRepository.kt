@@ -9,6 +9,7 @@ import com.google.firebase.ktx.Firebase
 interface UserRepository {
     suspend fun createUser(user: User)
     suspend fun getCurrentUser():User?
+    suspend fun getAllUsers(): List<User?>
 }
 
 class UserRepositoryImpl(
@@ -24,5 +25,9 @@ class UserRepositoryImpl(
         } ?: run {
            return null
         }
+    }
+
+    override suspend fun getAllUsers(): List<User?> {
+        return userServices.getAllUsers()
     }
 }
