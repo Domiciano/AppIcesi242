@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBox
+import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -37,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,11 +55,21 @@ fun ChatScreen(
     chatViewModel: ChatViewModel = viewModel()
 ) {
     var otherUserID by remember { mutableStateOf(userId) }
-    var messageText by remember { mutableStateOf("") }
     val messagesState by chatViewModel.messagesState.observeAsState(listOf())
+    var imagesLoaded by remember { mutableStateOf(0) }
+
+    val lazyColumnState = rememberLazyListState()
+
 
     LaunchedEffect(true) {
         chatViewModel.getMessagesLiveMode(otherUserID)
+    }
+
+    LaunchedEffect(messagesState, imagesLoaded) {
+        if(!messagesState.isEmpty()) {
+            val itemCount = messagesState.lastIndex
+            lazyColumnState.animateScrollToItem(itemCount)
+        }
     }
 
 
@@ -65,19 +77,33 @@ fun ChatScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
 
             LazyColumn(
+                state = lazyColumnState,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
             ) {
                 items(messagesState) { message ->
+
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            containerColor = if(message!!.isMine) MaterialTheme.colorScheme.primaryContainer else Color.LightGray,
                         ),
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(8.dp)
                     ) {
+
+                        message?.imageURL?.let {
+                            AsyncImage(
+                                model = it,
+                                contentDescription = "",
+                                modifier = Modifier.fillMaxWidth(),
+                                onSuccess = {
+                                    imagesLoaded++
+                                }
+                            )
+                        }
+
                         Text(
                             text = message?.content ?: "NO_MESSAGE",
                             modifier = Modifier
@@ -89,21 +115,55 @@ fun ChatScreen(
                 }
             }
 
-            Row {
-                TextField(
-                    value = messageText,
-                    onValueChange = { messageText = it },
-                    modifier = Modifier.weight(1f)
-                )
-
-                Button(onClick = {
-                    chatViewModel.sendMessage(messageText, otherUserID)
-                }) {
-                    Text(text = "Enviar")
-                }
-            }
+            MessageComposer(otherUserID)
 
 
         }
     }
+}
+
+@Composable
+fun MessageComposer(
+    otherUserID: String,
+    chatViewModel: ChatViewModel = viewModel()
+) {
+    var messageText by remember { mutableStateOf("") }
+    var selectedUri: Uri? by remember { mutableStateOf(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->  //image://234234234 -> /storage/Emulated/0/Andorid/hola.png
+        selectedUri = uri
+    }
+
+    Column {
+        selectedUri?.let {
+            AsyncImage(
+                model = it, contentDescription = "",
+                modifier = Modifier.size(100.dp)
+            )
+        }
+        Row {
+            TextField(
+                value = messageText,
+                onValueChange = { messageText = it },
+                modifier = Modifier.weight(1f)
+            )
+
+            Button(onClick = {
+                launcher.launch("image/*")
+            }) {
+                Icon(imageVector = Icons.Rounded.AddCircle, contentDescription = "")
+            }
+
+            Button(onClick = {
+                chatViewModel.sendMessage(messageText, selectedUri, otherUserID)
+                selectedUri = null
+                messageText = ""
+            }) {
+                Text(text = "Enviar")
+            }
+        }
+    }
+
 }

@@ -29,13 +29,13 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(content: String, otherUserID: String) {
+    fun sendMessage(content: String, uri:Uri?, otherUserID: String) {
         val message = Message(
             UUID.randomUUID().toString(),
             content
         )
         viewModelScope.launch(Dispatchers.IO) {
-            chatRepository.sendMessage(message, otherUserID)
+            chatRepository.sendMessage(message, uri, otherUserID)
         }
     }
 

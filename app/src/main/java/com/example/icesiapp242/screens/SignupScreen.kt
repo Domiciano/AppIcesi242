@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.icesiapp242.domain.model.AuthState
 import com.example.icesiapp242.domain.model.User
 import com.example.icesiapp242.viewmodel.SignupViewModel
 
@@ -40,13 +41,25 @@ fun SignupScreen(navController: NavController, signupViewModel: SignupViewModel 
             TextField(value = username, onValueChange = { username = it })
             TextField(value = email, onValueChange = { email = it })
             TextField(value = password, onValueChange = { password = it })
-            if (authState == 1) {
-                CircularProgressIndicator()
-            } else if (authState == 2) {
-                Text("Hubo un error", color = Color.Red)
-            } else if (authState == 3) {
-                navController.navigate("profile")
+
+
+            when(authState){
+                is AuthState.Loading -> {
+                    CircularProgressIndicator()
+                }
+                is AuthState.Error ->{
+                    Text(text = (authState as AuthState.Error).message)
+                }
+                is AuthState.Success ->{
+                    navController.navigate("profile")
+                }
+                AuthState.Idle -> {
+                }
+                null -> {
+
+                }
             }
+
             Button(onClick = {
                 signupViewModel.signup(
                     User("", name, username, email),

@@ -21,6 +21,8 @@ interface ChatService {
     suspend fun sendMessage(message: Message, chatroomID: String)
     suspend fun getMessages(chatroomID: String): List<Message?>
     fun getLiveMessages(chatroomID: String, callback: suspend (QueryDocumentSnapshot) -> Unit)
+    suspend fun uploadImage(uri:Uri, id:String)
+    suspend fun getImageURLByID(it: String):String
 }
 
 class ChatServiceImpl : ChatService {
@@ -95,5 +97,18 @@ class ChatServiceImpl : ChatService {
                     }
                 }
             }
+    }
+
+    override suspend fun uploadImage(uri: Uri, id: String) {
+        Firebase.storage.reference
+            .child("chatImages").child(id)
+            .putFile(uri).await()
+    }
+
+    override suspend fun getImageURLByID(id: String): String {
+        val result = Firebase.storage.reference.child("chatImages")
+            .child(id)
+            .downloadUrl.await()
+        return result.toString()
     }
 }

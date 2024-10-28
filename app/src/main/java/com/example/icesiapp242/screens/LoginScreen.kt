@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.icesiapp242.domain.model.AuthState
 import com.example.icesiapp242.viewmodel.SignupViewModel
 
 @Composable
@@ -33,12 +34,22 @@ fun LoginScreen(navController: NavController, authViewModel: SignupViewModel = v
             onValueChange = { password = it },
             visualTransformation = PasswordVisualTransformation()
         )
-        if (authState == 1) {
-            CircularProgressIndicator()
-        } else if (authState == 2) {
-            Text(text = "Hubo un error, que no podemos ver todavia")
-        } else if (authState == 3) {
-            navController.navigate("profile")
+
+        when(authState){
+            is AuthState.Loading -> {
+                CircularProgressIndicator()
+            }
+            is AuthState.Error ->{
+                Text(text = (authState as AuthState.Error).message)
+            }
+            is AuthState.Success ->{
+                navController.navigate("profile")
+            }
+            AuthState.Idle -> {
+            }
+            null -> {
+
+            }
         }
 
         Button(onClick = {
