@@ -1,7 +1,12 @@
 package com.example.icesiapp242.screens
 
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,20 +36,38 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.icesiapp242.viewmodel.ChatViewModel
 
 @Composable
-fun ChatScreen(navController: NavController, userId:String, chatViewModel: ChatViewModel = viewModel()) {
+fun ChatScreen(
+    navController: NavController,
+    userId: String,
+    chatViewModel: ChatViewModel = viewModel()
+) {
     var otherUserID by remember { mutableStateOf(userId) }
     var messageText by remember { mutableStateOf("") }
     val messagesState by chatViewModel.messagesState.observeAsState(listOf())
+
+    var globalUri: Uri? by remember {
+        mutableStateOf(null)
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        globalUri = uri
+    }
+
 
     val lazyColumnState = rememberLazyListState()
 
 
     LaunchedEffect(messagesState) {
         val itemCount = messagesState.size
-        if(itemCount>0){lazyColumnState.animateScrollToItem(itemCount-1)}
+        if (itemCount > 0) {
+            lazyColumnState.animateScrollToItem(itemCount - 1)
+        }
     }
 
 
@@ -65,35 +88,62 @@ fun ChatScreen(navController: NavController, userId:String, chatViewModel: ChatV
                     .weight(1f)
                     .fillMaxWidth()
             ) {
-                messagesState?.let {
-                    items(it) { message ->
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            ),
-                            modifier = Modifier.fillMaxSize().padding(8.dp)
-                        ) {
-                            Text(
-                                text = message?.content ?: "NO_MESSAGE",
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                textAlign = TextAlign.Center,
-                            )
+                items(messagesState) { message ->
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        ),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp)
+                    ) {
+                        message?.imageUrl?.let {
+                            AsyncImage(model = it, contentDescription = "", modifier = Modifier.fillMaxWidth())
                         }
+                        Text(
+                            text = message?.content ?: "NO_MESSAGE",
+                            modifier = Modifier
+                                .padding(16.dp),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
 
+                }
+            }
+
+
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                globalUri?.let {
+                    Box(modifier = Modifier.size(100.dp)) {
+                        AsyncImage(
+                            model = it,
+                            contentDescription = "",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+                Row {
+                    TextField(
+                        value = messageText,
+                        onValueChange = { messageText = it },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Button(onClick = {
+                        launcher.launch("image/*")
+                    }) {
+                        Text(text = "Galería")
+                    }
+                    Button(onClick = {
+                        chatViewModel.sendMessage(messageText, globalUri, otherUserID)
+                        messageText = ""
+                        globalUri = null
+                    }) {
+                        Text(text = "Enviar")
                     }
                 }
             }
-            Row {
-                TextField(
-                    value = messageText,
-                    onValueChange = { messageText = it },
-                    modifier = Modifier.weight(1f)
-                )
-                Button(onClick = { chatViewModel.sendMessage(messageText, otherUserID) }) {
-                    Text(text = "Enviar")
-                }
-            }
+
 
         }
     }

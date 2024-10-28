@@ -1,5 +1,6 @@
 package com.example.icesiapp242.service
 
+import android.net.Uri
 import android.util.Log
 import com.example.icesiapp242.domain.model.Message
 import com.google.firebase.firestore.DocumentChange
@@ -8,14 +9,20 @@ import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 interface ChatService {
     suspend fun searchChatId(userID1: String, userID2: String): String
     suspend fun sendMessage(message: Message, chatroomID: String)
+    suspend fun sendImage(uri: Uri, chatId: String)
     suspend fun getMessages(chatroomID: String): List<Message?>
-    fun getLiveMessages(chatroomID: String, callback : (QueryDocumentSnapshot) -> Unit)
+    fun getLiveMessages(chatroomID: String, callback: suspend (QueryDocumentSnapshot) -> Unit)
+    suspend fun getURLOfImage(imageId: String): String
 }
 
 class ChatServiceImpl : ChatService {
@@ -61,6 +68,10 @@ class ChatServiceImpl : ChatService {
             .await()
     }
 
+    override suspend fun sendImage(uri: Uri, chatId: String) {
+        Firebase.storage.reference.child("chatImages").child(chatId).putFile(uri).await()
+    }
+
     override suspend fun getMessages(chatroomID: String): List<Message?> {
         val result = Firebase.firestore
             .collection("chats")
@@ -75,19 +86,26 @@ class ChatServiceImpl : ChatService {
         return messages
     }
 
-    override fun getLiveMessages(chatroomID: String, callback : (QueryDocumentSnapshot) -> Unit) {
+    override fun getLiveMessages(chatroomID: String, callback: suspend (QueryDocumentSnapshot) -> Unit) {
         Firebase.firestore
             .collection("chats")
             .document(chatroomID)
             .collection("messages")
             .orderBy("date", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, err ->
-                snapshot?.documentChanges?.forEach { documentChange ->
-                    if (documentChange.type == DocumentChange.Type.ADDED) {
-                        callback(documentChange.document)
+                CoroutineScope(Dispatchers.IO).launch {
+                    snapshot?.documentChanges?.forEach { documentChange ->
+                        if (documentChange.type == DocumentChange.Type.ADDED) {
+                            callback(documentChange.document)
+                        }
                     }
                 }
             }
+    }
+
+    override suspend fun getURLOfImage(imageId: String): String {
+        return Firebase.storage.reference.child("chatImages").child(imageId).downloadUrl.await()
+            .toString()
     }
 
 }

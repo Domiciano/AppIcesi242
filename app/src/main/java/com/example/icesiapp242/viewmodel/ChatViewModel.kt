@@ -1,5 +1,6 @@
 package com.example.icesiapp242.viewmodel
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.icesiapp242.domain.model.Message
 import com.example.icesiapp242.repository.ChatRepository
 import com.example.icesiapp242.repository.ChatRepositoryImpl
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,24 +29,23 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(content: String, otherUserID: String) {
+    fun sendMessage(content: String, uri: Uri?, otherUserID: String) {
         val message = Message(
             UUID.randomUUID().toString(),
             content
         )
         viewModelScope.launch(Dispatchers.IO) {
-            chatRepository.sendMessage(message, otherUserID)
+            chatRepository.sendMessage(message, uri, otherUserID)
         }
     }
 
     fun getMessagesLiveMode(otherUserID: String) {
         viewModelScope.launch(Dispatchers.IO) {
             chatRepository.getLiveMessages(otherUserID) { message ->
-                Log.e(">>>", message.content)
                 val currentMessages = _messagesState.value ?: arrayListOf()
-                val updatedMessages = ArrayList(currentMessages) // Crear una copia
+                val updatedMessages = ArrayList(currentMessages)
                 updatedMessages.add(message)
-                _messagesState.value = updatedMessages
+                withContext(Dispatchers.Main){ _messagesState.value = updatedMessages}
             }
         }
 
