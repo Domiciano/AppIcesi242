@@ -55,33 +55,6 @@ fun ChatScreen(
     var otherUserID by remember { mutableStateOf(userId) }
     var messageText by remember { mutableStateOf("") }
     val messagesState by chatViewModel.messagesState.observeAsState(listOf())
-    var uploadImages by remember { mutableStateOf(0) }
-
-    var globalUri: Uri? by remember {
-        mutableStateOf(null)
-    }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        globalUri = uri
-    }
-
-
-    val lazyColumnState = rememberLazyListState()
-
-
-    LaunchedEffect(messagesState, uploadImages) {
-        val itemCount = messagesState.size
-        if (itemCount > 0) {
-            lazyColumnState.animateScrollToItem(itemCount - 1)
-        }
-    }
-
-
-    LaunchedEffect(!lazyColumnState.canScrollBackward) {
-
-    }
 
     LaunchedEffect(true) {
         chatViewModel.getMessagesLiveMode(otherUserID)
@@ -92,7 +65,6 @@ fun ChatScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
 
             LazyColumn(
-                state = lazyColumnState,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
@@ -106,14 +78,6 @@ fun ChatScreen(
                             .fillMaxSize()
                             .padding(8.dp)
                     ) {
-                        message?.imageUrl?.let {
-                            AsyncImage(
-                                model = it,
-                                contentDescription = "",
-                                modifier = Modifier.fillMaxWidth(),
-                                onSuccess = {uploadImages ++}
-                            )
-                        }
                         Text(
                             text = message?.content ?: "NO_MESSAGE",
                             modifier = Modifier
@@ -125,36 +89,17 @@ fun ChatScreen(
                 }
             }
 
+            Row {
+                TextField(
+                    value = messageText,
+                    onValueChange = { messageText = it },
+                    modifier = Modifier.weight(1f)
+                )
 
-
-            Column(modifier = Modifier.fillMaxWidth()) {
-                globalUri?.let {
-                    Box(modifier = Modifier.size(100.dp)) {
-                        AsyncImage(
-                            model = it,
-                            contentDescription = "",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-                Row {
-                    TextField(
-                        value = messageText,
-                        onValueChange = { messageText = it },
-                        modifier = Modifier.weight(1f)
-                    )
-                    Button(onClick = {
-                        launcher.launch("image/*")
-                    }) {
-                        Text(text = "Galería")
-                    }
-                    Button(onClick = {
-                        chatViewModel.sendMessage(messageText, globalUri, otherUserID)
-                        messageText = ""
-                        globalUri = null
-                    }) {
-                        Text(text = "Enviar")
-                    }
+                Button(onClick = {
+                    chatViewModel.sendMessage(messageText, otherUserID)
+                }) {
+                    Text(text = "Enviar")
                 }
             }
 

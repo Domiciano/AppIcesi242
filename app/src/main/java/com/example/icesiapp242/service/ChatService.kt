@@ -19,10 +19,8 @@ import java.util.UUID
 interface ChatService {
     suspend fun searchChatId(userID1: String, userID2: String): String
     suspend fun sendMessage(message: Message, chatroomID: String)
-    suspend fun sendImage(uri: Uri, chatId: String)
     suspend fun getMessages(chatroomID: String): List<Message?>
     fun getLiveMessages(chatroomID: String, callback: suspend (QueryDocumentSnapshot) -> Unit)
-    suspend fun getURLOfImage(imageId: String): String
 }
 
 class ChatServiceImpl : ChatService {
@@ -68,10 +66,6 @@ class ChatServiceImpl : ChatService {
             .await()
     }
 
-    override suspend fun sendImage(uri: Uri, chatId: String) {
-        Firebase.storage.reference.child("chatImages").child(chatId).putFile(uri).await()
-    }
-
     override suspend fun getMessages(chatroomID: String): List<Message?> {
         val result = Firebase.firestore
             .collection("chats")
@@ -91,7 +85,6 @@ class ChatServiceImpl : ChatService {
             .collection("chats")
             .document(chatroomID)
             .collection("messages")
-            .limit(10)
             .orderBy("date", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, err ->
                 CoroutineScope(Dispatchers.IO).launch {
@@ -103,10 +96,4 @@ class ChatServiceImpl : ChatService {
                 }
             }
     }
-
-    override suspend fun getURLOfImage(imageId: String): String {
-        return Firebase.storage.reference.child("chatImages").child(imageId).downloadUrl.await()
-            .toString()
-    }
-
 }
