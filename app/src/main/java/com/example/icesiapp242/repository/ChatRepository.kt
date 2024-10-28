@@ -50,8 +50,8 @@ class ChatRepositoryImpl(
             val msg = doc.toObject(Message::class.java)
             msg.imageId?.let {
                 msg.imageUrl = chatService.getURLOfImage(it)
-                callback(msg)
             }
+            callback(msg)
         }
     }
 
