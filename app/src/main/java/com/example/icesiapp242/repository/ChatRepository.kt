@@ -23,6 +23,9 @@ interface ChatRepository {
 class ChatRepositoryImpl(
     val chatService: ChatService = ChatServiceImpl()
 ) : ChatRepository {
+
+    private var lastMessage: Message? = null
+
     override suspend fun sendMessage(message: Message, uri: Uri?, otherUserId: String) {
         uri?.let {
             val imageID = UUID.randomUUID().toString()
@@ -41,6 +44,7 @@ class ChatRepositoryImpl(
                 message.imageUrl = chatService.getURLOfImage(it)
             }
         }
+        this.lastMessage = messages.last()
         return messages
     }
 

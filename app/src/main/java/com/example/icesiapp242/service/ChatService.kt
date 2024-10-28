@@ -91,6 +91,7 @@ class ChatServiceImpl : ChatService {
             .collection("chats")
             .document(chatroomID)
             .collection("messages")
+            .limit(10)
             .orderBy("date", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, err ->
                 CoroutineScope(Dispatchers.IO).launch {

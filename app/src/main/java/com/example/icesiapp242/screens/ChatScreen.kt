@@ -91,9 +91,6 @@ fun ChatScreen(
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
 
-
-
-
             LazyColumn(
                 state = lazyColumnState,
                 modifier = Modifier
