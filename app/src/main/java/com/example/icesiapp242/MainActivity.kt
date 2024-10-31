@@ -1,5 +1,6 @@
 package com.example.icesiapp242
 
+import android.Manifest
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -57,6 +58,9 @@ import com.google.firebase.ktx.Firebase
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        requestPermissions(arrayOf(Manifest.permission.CAMERA, Manifest.permission.CALL_PHONE), 11)
+
         enableEdgeToEdge()
         setContent {
             IcesiAPP242Theme {
